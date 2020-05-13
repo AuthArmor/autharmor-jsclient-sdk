@@ -1,4 +1,4 @@
-# AuthArmor Javascript SDK
+# AuthArmor Javascript Client-side SDK
 
 ## 🏁 Installation
 
@@ -6,16 +6,16 @@ You can integrate the AuthArmor SDK into your website by installing and importin
 
 ```bash
 # Via NPM
-npm i -s autharmor-sdk
+npm i -s autharmor-jsclient-sdk
 
 # Via Yarn
-yarn add autharmor-sdk
+yarn add autharmor-jsclient-sdk
 ```
 
 You can also load the SDK via our CDN by placing this `script` tag in your app's `<head>`
 
 ```html
-<script src="https://cdn.autharmor.com/scripts/autharmor-sdk.js"></script>
+<script src="https://cdn.autharmor.com/scripts/autharmor-jsclient-sdk.js"></script>
 ```
 
 ## 🧭 Usage
