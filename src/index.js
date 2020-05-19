@@ -294,49 +294,53 @@ class AuthArmorSDK {
   }
 
   async generateInviteCode({ nickname, referenceId }) {
-    if (!nickname) {
-      throw new Error("Please specify a nickname for the invite code");
-    }
-
-    const { data } = await Http.post(
-      `/auth/autharmor/invite`,
-      {
-        nickname,
-        referenceId
-      },
-      { withCredentials: true }
-    );
-
-    return {
-      ...data,
-      getQRCode: () => {
-        const stringifiedInvite = JSON.stringify({
-          type: "profile_invite",
-          payload: data
-        });
-        console.log("stringifiedInvite:", stringifiedInvite);
-        const code = kjua({
-          text: stringifiedInvite,
-          rounded: 0,
-          back: "#202020",
-          fill: "#2db4b4"
-        });
-        console.log(code);
-        return code.src;
-      },
-      getInviteLink: () => {
-        return `${config.inviteURL}/?i=${data.invite_code}&aa_sig=${data.aa_sig}`;
-      },
-      useInviteLink: () => {
-        this._showPopup();
-        this._popupWindow(
-          `${config.inviteURL}/?i=${data.invite_code}&aa_sig=${data.aa_sig}`,
-          "Link your account with AuthArmor",
-          600,
-          400
-        );
+    try {
+      if (!nickname) {
+        throw new Error("Please specify a nickname for the invite code");
       }
-    };
+
+      const { data } = await Http.post(
+        `/auth/autharmor/invite`,
+        {
+          nickname,
+          referenceId
+        },
+        { withCredentials: true }
+      );
+
+      return {
+        ...data,
+        getQRCode: () => {
+          const stringifiedInvite = JSON.stringify({
+            type: "profile_invite",
+            payload: data
+          });
+          console.log("stringifiedInvite:", stringifiedInvite);
+          const code = kjua({
+            text: stringifiedInvite,
+            rounded: 0,
+            back: "#202020",
+            fill: "#2db4b4"
+          });
+          console.log(code);
+          return code.src;
+        },
+        getInviteLink: () => {
+          return `${config.inviteURL}/?i=${data.invite_code}&aa_sig=${data.aa_sig}`;
+        },
+        useInviteLink: () => {
+          this._showPopup();
+          this._popupWindow(
+            `${config.inviteURL}/?i=${data.invite_code}&aa_sig=${data.aa_sig}`,
+            "Link your account with AuthArmor",
+            600,
+            400
+          );
+        }
+      };
+    } catch (err) {
+      throw err?.response?.data;
+    }
   }
 
   async confirmInvite(id) {
