@@ -42,7 +42,7 @@ class AuthArmorSDK {
 
   // Private Methods
 
-  _processUrl(url = "") {
+  _processUrl = (url = "") => {
     const lastCharacter = url.slice(-1);
     const containsSlash = lastCharacter === "/";
     if (containsSlash) {
@@ -50,15 +50,15 @@ class AuthArmorSDK {
     }
 
     return url;
-  }
+  };
 
-  _ensureEventExists(eventName) {
+  _ensureEventExists = eventName => {
     if (!this.events.includes(eventName)) {
       throw new Error("Event doesn't exist");
     }
-  }
+  };
 
-  _popupWindow(url, title, w, h) {
+  _popupWindow = (url, title, w, h) => {
     const y = window.outerHeight / 2 + window.screenY - h / 2;
     const x = window.outerWidth / 2 + window.screenX - w / 2;
     const openedWindow = window.open(
@@ -84,15 +84,15 @@ class AuthArmorSDK {
         window.closedWindow();
       }
     }, 500);
-  }
+  };
 
-  _showPopup(message = "Waiting for device") {
+  _showPopup = (message = "Waiting for device") => {
     document.querySelector(".popup-overlay").classList.remove("hidden");
     document.querySelector(".auth-message").textContent = message;
     this._executeEvent("popupOverlayOpened");
-  }
+  };
 
-  _hidePopup(delay = 2000) {
+  _hidePopup = (delay = 2000) => {
     setTimeout(() => {
       document.querySelector(".popup-overlay").classList.add("hidden");
       document
@@ -104,21 +104,21 @@ class AuthArmorSDK {
           "Waiting for device";
       }, 200);
     }, delay);
-  }
+  };
 
-  _updateMessage(message, status = "success") {
+  _updateMessage = (message, status = "success") => {
     document
       .querySelector(".auth-message")
       .classList.add(`autharmor--${status}`);
     document.querySelector(".auth-message").textContent = message;
-  }
+  };
 
-  _executeEvent(eventName, ...data) {
+  _executeEvent = (eventName, ...data) => {
     this._ensureEventExists(eventName);
 
     const listeners = this.eventListeners.get(eventName);
     listeners.map(listener => listener(...data));
-  }
+  };
 
   _init() {
     document.body.innerHTML += `
@@ -177,6 +177,7 @@ class AuthArmorSDK {
           background-color: rgb(0, 128, 128);
           width: 100%;
           text-align: center;
+          font-family: 'Montserrat', 'Helvetica Neue', 'Roboto', 'Arial', sans-serif;
           transition: all .2s ease;
         }
 
@@ -252,7 +253,7 @@ class AuthArmorSDK {
 
   // -- Invite functionality
 
-  setInviteData({ inviteCode, signature } = {}) {
+  _setInviteData = ({ inviteCode, signature } = {}) => {
     if (!inviteCode || !signature) {
       throw new Error("Please specify an invite code and a signature");
     }
@@ -291,9 +292,9 @@ class AuthArmorSDK {
         );
       }
     };
-  }
+  };
 
-  async generateInviteCode({ nickname, referenceId }) {
+  _generateInviteCode = async ({ nickname, referenceId }) => {
     try {
       if (!nickname) {
         throw new Error("Please specify a nickname for the invite code");
@@ -341,9 +342,9 @@ class AuthArmorSDK {
     } catch (err) {
       throw err?.response?.data;
     }
-  }
+  };
 
-  async confirmInvite(id) {
+  _confirmInvite = async id => {
     try {
       this._executeEvent("authenticating");
       this._showPopup();
@@ -388,9 +389,9 @@ class AuthArmorSDK {
           }
         : err;
     }
-  }
+  };
 
-  async logout() {
+  _logout = async () => {
     try {
       const { data } = await Http.get(`/auth/autharmor/logout`, {
         withCredentials: true
@@ -399,11 +400,11 @@ class AuthArmorSDK {
     } catch (err) {
       throw err?.response?.data;
     }
-  }
+  };
 
   // -- Authentication functionality
 
-  async authenticate(username) {
+  _authenticate = async username => {
     try {
       this._showPopup();
       const { data } = await Http.post(
@@ -434,10 +435,10 @@ class AuthArmorSDK {
       this._hidePopup();
       throw err?.response?.data;
     }
-  }
+  };
 
   // Get if user is authenticated
-  async getUser() {
+  _getUser = async () => {
     try {
       const { data } = await Http.get(`/auth/autharmor/me`, {
         withCredentials: true
@@ -446,23 +447,33 @@ class AuthArmorSDK {
     } catch (err) {
       throw err?.response?.data;
     }
-  }
+  };
 
   // Public interfacing SDK functions
 
   get invite() {
     return {
-      generateInviteCode: this.generateInviteCode,
-      setInviteData: this.setInviteData,
-      confirmInvite: this.confirmInvite
+      generateInviteCode: this._generateInviteCode,
+      setInviteData: this._setInviteData,
+      confirmInvite: this._confirmInvite
     };
   }
 
   get auth() {
     return {
-      authenticate: this.authenticate
+      authenticate: this._authenticate,
+      getUser: this._getUser,
+      logout: this._logout
+    };
+  }
+
+  get popup() {
+    return {
+      show: this._showPopup,
+      hide: this._hidePopup,
+      updateMessage: this._updateMessage
     };
   }
 }
 
-export default AuthArmorSDK;
+module.exports = AuthArmorSDK;
