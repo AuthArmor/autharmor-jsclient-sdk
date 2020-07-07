@@ -79,7 +79,7 @@ class AuthArmorSDK {
     );
     this._executeEvent("inviteWindowOpened");
     const interval = setInterval(function() {
-      if (openedWindow.closed) {
+      if (!openedWindow || openedWindow.closed) {
         clearInterval(interval);
         window.closedWindow();
       }
@@ -197,39 +197,48 @@ class AuthArmorSDK {
     window.openedWindow = () => {
       this._executeEvent("inviteWindowOpened");
       this._showPopup();
+      this.requestCompleted = false;
     };
 
     window.addEventListener("message", message => {
       const parsedMessage = JSON.parse(message.data);
-      console.log(parsedMessage);
 
       if (parsedMessage.type === "requestAccepted") {
         this._executeEvent("inviteAccepted", parsedMessage);
         this._updateMessage(parsedMessage.data.message);
+        this.requestCompleted = true;
         this._hidePopup();
       }
 
       if (parsedMessage.type === "requestCancelled") {
         this._executeEvent("inviteCancelled", parsedMessage);
         this._updateMessage(parsedMessage.data.message, "danger");
+        this.requestCompleted = true;
         this._hidePopup();
       }
 
       if (parsedMessage.type === "requestError") {
         this._executeEvent("error", parsedMessage);
         this._updateMessage(parsedMessage.data.message, "danger");
+        this.requestCompleted = true;
         this._hidePopup();
       }
 
       if (parsedMessage.type === "requestExists") {
         this._executeEvent("inviteExists", parsedMessage);
         this._updateMessage(parsedMessage.data.message, "warn");
+        this.requestCompleted = true;
         this._hidePopup();
       }
     });
 
     window.closedWindow = () => {
       this._executeEvent("inviteWindowClosed");
+
+      if (!this.requestCompleted) {
+        this._updateMessage("User closed the popup", "danger");
+      }
+
       this._hidePopup();
     };
   }
@@ -316,14 +325,12 @@ class AuthArmorSDK {
             type: "profile_invite",
             payload: data
           });
-          console.log("stringifiedInvite:", stringifiedInvite);
           const code = kjua({
             text: stringifiedInvite,
             rounded: 0,
             back: "#202020",
             fill: "#2db4b4"
           });
-          console.log(code);
           return code.src;
         },
         getInviteLink: () => {
