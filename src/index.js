@@ -351,14 +351,14 @@ class AuthArmorSDK {
     }
   };
 
-  _confirmInvite = async id => {
+  _confirmInvite = async nickname => {
     try {
       this._executeEvent("authenticating");
       this._showPopup();
       const { data } = await Http.post(
         `/auth/autharmor/invite/confirm`,
         {
-          auth_profile_id: id
+          nickname
         },
         { withCredentials: true }
       );
